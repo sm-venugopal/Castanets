@@ -335,6 +335,10 @@ class CORE_EXPORT HTMLMediaElement
 
   bool HasMediaSource() const { return media_source_; }
 
+#if defined(CASTANETS)
+  void PauseOnExitFullscreen() override;
+#endif
+
  protected:
   HTMLMediaElement(const QualifiedName&, Document&);
   ~HTMLMediaElement() override;
@@ -557,6 +561,10 @@ class CORE_EXPORT HTMLMediaElement
   void RejectPlayPromisesInternal(DOMExceptionCode, const String&);
 
   EnumerationHistogram& ShowControlsHistogram() const;
+
+#if defined(CASTANETS)
+  void EnterFullscreen();
+#endif
 
   TaskRunnerTimer<HTMLMediaElement> load_timer_;
   TaskRunnerTimer<HTMLMediaElement> progress_event_timer_;

@@ -218,6 +218,11 @@ bool AutoplayPolicy::RequestAutoplayUnmute() {
 }
 
 bool AutoplayPolicy::RequestAutoplayByAttribute() {
+#if defined(CASTANETS)
+  // TODO (sm.venugopal): Should be removed.
+  return false;
+#endif
+
   if (!ShouldAutoplay())
     return false;
 

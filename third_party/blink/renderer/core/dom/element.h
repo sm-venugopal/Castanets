@@ -874,6 +874,10 @@ class CORE_EXPORT Element : public ContainerNode {
   void WillBeginCustomizedScrollPhase(ScrollCustomization::ScrollDirection);
   void DidEndCustomizedScrollPhase();
 
+#if defined(CASTANETS)
+  virtual void PauseOnExitFullscreen() {}
+#endif
+
  protected:
   Element(const QualifiedName& tag_name, Document*, ConstructionType);
 

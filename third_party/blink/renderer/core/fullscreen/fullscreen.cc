@@ -831,6 +831,11 @@ ScriptPromise Fullscreen::ExitFullscreen(Document& doc,
     Unfullscreen(*element);
   }
 
+#if defined(CASTANETS)
+  if (IsHTMLVideoElement(element))
+    element->PauseOnExitFullscreen();
+#endif
+
   // 7. Return |promise|, and run the remaining steps in parallel.
   ScriptPromise promise = resolver ? resolver->Promise() : ScriptPromise();
 
