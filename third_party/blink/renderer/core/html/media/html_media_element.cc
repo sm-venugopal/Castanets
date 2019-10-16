@@ -106,6 +106,10 @@
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
+#if defined(CASTANETS)
+#include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
+#endif
+
 #ifndef BLINK_MEDIA_LOG
 #define BLINK_MEDIA_LOG DVLOG(3)
 #endif
@@ -3505,6 +3509,11 @@ void HTMLMediaElement::UpdatePlayState() {
     SetDisplayMode(kVideo);
 
     if (!is_playing) {
+#if defined(CASTANETS)
+      if (!IsFullscreen() && IsHTMLVideoElement() && IsInteractiveContent())
+        EnterFullscreen();
+#endif
+
       // Set rate, muted before calling play in case they were set before the
       // media engine was setup.  The media engine should just stash the rate
       // and muted values since it isn't already playing.
@@ -4302,6 +4311,21 @@ void HTMLMediaElement::CheckViewportIntersectionTimerFired(TimerBase*) {
   if (web_media_player_)
     web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
 }
+
+#if defined(CASTANETS)
+void HTMLMediaElement::EnterFullscreen() {
+  BLINK_MEDIA_LOG << "EnterFullscreen(" << (void*)this << ")";
+  Fullscreen::RequestFullscreen(*this, FullscreenOptions(),
+                                Fullscreen::RequestType::kPrefixed);
+}
+
+void HTMLMediaElement::PauseOnExitFullscreen() {
+  BLINK_MEDIA_LOG << "EnterFullscreen(" << (void*)this << ")";
+  bool is_playing = GetWebMediaPlayer() && !GetWebMediaPlayer()->Paused();
+  if (IsFullscreen() && IsInteractiveContent() && is_playing)
+    RequestPause();
+}
+#endif
 
 STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveNothing,
                    HTMLMediaElement::kHaveNothing);
