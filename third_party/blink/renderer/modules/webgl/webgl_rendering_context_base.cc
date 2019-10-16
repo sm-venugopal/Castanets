@@ -2918,6 +2918,16 @@ bool WebGLRenderingContextBase::ExtensionSupportedAndAllowed(
 
 ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* script_state,
                                                     const String& name) {
+#if defined(VIDEO_HOLE)
+  if (canvas()) {
+    if (Page* p = canvas()->GetDocument().GetPage()) {
+      p->GetSettings().SetVideoHoleEnabled(false);
+      LOG(INFO) << "if OES_EGL_image_external is enabled, "
+                   "video hole should be disabled. ";
+    }
+  }
+#endif
+
   WebGLExtension* extension = nullptr;
 
   if (!isContextLost()) {
