@@ -103,6 +103,25 @@ class WebMediaPlayer {
     kLoadTypeMax = kLoadTypeMediaStream,
   };
 
+#if defined(CASTANETS)
+  typedef struct audio_video_track_info {
+    std::string id;
+    std::string kind;
+    std::string label;
+    std::string language;
+    bool enabled;
+  } audio_video_track_info_s;
+
+  typedef struct register_timeline_cb_info {
+    std::string timeline_selector;
+    uint32_t units_per_tick;
+    uint32_t units_per_second;
+    int64_t content_time;
+    int timeline_state;
+  } register_timeline_cb_info_s;
+
+#endif
+
   typedef WebString TrackId;
   enum TrackType { kTextTrack, kAudioTrack, kVideoTrack };
 

@@ -356,6 +356,16 @@ source_set("common") {
     "//content/public/common:interfaces",
   ]
 
+  if (enable_castanets) {
+    sources += [
+      "media/castanets_media_param_traits.cc",
+      "media/castanets_media_param_traits.h",
+      "media/castanets_media_player_init_config.h",
+      "media/castanets_media_player_messages.h",
+      "media/castanets_media_player_messages_enums.h",
+    ]
+  }
+
   if (is_android && use_seccomp_bpf) {
     set_sources_assignment_filter([])
     sources += [

@@ -391,6 +391,14 @@ jumbo_source_set("base") {
   } else {
     sources += [ "demuxer_memory_limit_default.cc" ]
   }
+  
+  if (enable_castanets) {
+    sources += [
+      "castanets/demuxer_castanets.h",
+      "castanets/demuxer_stream_player_params_castanets.h",
+      "castanets/demuxer_stream_player_params_castanets.cc",
+    ]
+  }
 }
 
 source_set("video_facing") {

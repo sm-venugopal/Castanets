@@ -41,6 +41,9 @@ enum IPCMessageStart {
   BrowserPluginMsgStart,
   AndroidWebViewMsgStart,
   MediaPlayerMsgStart,
+#if defined(CASTANETS)
+  MediaPlayerCastanetsMsgStart,
+#endif
   TracingMsgStart,
   PeerConnectionTrackerMsgStart,
   WebRtcLoggingMsgStart,
