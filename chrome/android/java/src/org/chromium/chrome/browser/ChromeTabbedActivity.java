@@ -14,12 +14,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ShortcutManager;
+import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Pair;
@@ -2400,7 +2404,7 @@ public class ChromeTabbedActivity
         mTabModelSelectorImpl.saveState();
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
+    @TargetApi(29)
     private void killOtherTask() {
         if (!FeatureUtilities.isTabModelMergingEnabled()) return;
 
@@ -2477,7 +2481,7 @@ public class ChromeTabbedActivity
      * was performed.
      * @param isIncognito Whether the shortcut or action created a new incognito tab.
      */
-    @TargetApi(Build.VERSION_CODES.N_MR1)
+    @TargetApi(29)
     private void reportNewTabShortcutUsed(boolean isIncognito) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
 

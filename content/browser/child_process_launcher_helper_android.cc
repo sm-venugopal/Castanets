@@ -28,6 +28,7 @@
 
 #if defined(CASTANETS)
 #include "base/base_switches.h"
+#include "base/distributed_chromium_util.h"
 #endif
 
 using base::android::AttachCurrentThread;
@@ -60,8 +61,11 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
       << "Unsupported process type: " << process_type;
 
   // Non-sandboxed utility or renderer process are currently not supported.
+  // Don't check Sandbox for Service Offloading.
+#if !defined(SERVICE_OFFLOADING)
   DCHECK(process_type == switches::kGpuProcess ||
          !command_line()->HasSwitch(service_manager::switches::kNoSandbox));
+#endif
 }
 
 base::Optional<mojo::NamedPlatformChannel>
@@ -71,9 +75,7 @@ ChildProcessLauncherHelper::CreateNamedPlatformChannelOnClientThread() {
   if (!remote_process_)
     return base::nullopt;
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kServerAddress) ||
-      command_line->GetSwitchValueASCII(switches::kServerAddress).empty()) {
+  if (base::Castanets::ServerAddress().empty()) {
     mojo::NamedPlatformChannel::Options options;
     options.port = (GetProcessType() == switches::kRendererProcess)
                        ? mojo::kCastanetsRendererPort
@@ -128,7 +130,7 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     bool* is_synchronous_launch,
     int* launch_result) {
 #if defined(CASTANETS)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableForking)) {
+  if (base::Castanets::IsEnabled()) {
     Process castanets_process;
     // Positive: normal process
     // 0: kNullProcessHandle
@@ -267,7 +269,8 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     base::Process process,
     const ChildProcessLauncherPriority& priority) {
 #if defined(CASTANETS)
-  return;
+  if (base::Castanets::IsEnabled())
+    return;
 #endif
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);

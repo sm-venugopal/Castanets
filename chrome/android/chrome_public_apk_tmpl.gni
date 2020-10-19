@@ -4,6 +4,7 @@
 
 import("//base/android/linker/config.gni")
 import("//base/android/proguard/proguard.gni")
+import("//build/config/android/config.gni")
 import("//build/config/android/extract_unwind_tables.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/compiler/compiler.gni")
@@ -28,6 +29,8 @@ default_chrome_public_jinja_variables = [
   "enable_vr=$enable_vr",
   "include_arcore_manifest_flag=false",
   "notouch_build=$notouch_build",
+  "enable_castanets=$enable_castanets",
+  "enable_offload=$enable_offload",
 ]
 
 # A template used to declare any target that will implement a full Chromium
@@ -116,13 +119,21 @@ template("chrome_public_common_apk_or_module_tmpl") {
     forward_variables_from(invoker, "*")
 
     if (_is_trichrome) {
-      min_sdk_version = 28
+      if (enable_service_offloading) {
+        min_sdk_version = 29
+      } else {
+        min_sdk_version = 28
+      }
     } else if (_is_monochrome) {
       min_sdk_version = 24
     } else if (_is_modern) {
       min_sdk_version = 21
     } else {
-      min_sdk_version = 19
+      if (enable_service_offloading) {
+        min_sdk_version = 29
+      } else {
+        min_sdk_version = 19
+      }
     }
 
     resource_blacklist_regex = "[/-]xxxhdpi[/-]"
@@ -223,6 +234,10 @@ template("chrome_public_common_apk_or_module_tmpl") {
       } else {
         proguard_configs +=
             [ "//base/android/proguard/disable_all_obfuscation.flags" ]
+      }
+      if (enable_offload) {
+        proguard_configs +=
+            [ "//third_party/offload-js/edge_worker/android/proguard.flags" ]
       }
     }
 

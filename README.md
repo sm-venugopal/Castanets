@@ -141,33 +141,46 @@ $ autoninja -C out/Android chrome_public_apk
 
 
 ### 5. How To run Castanets
-#### 5.1 Run castanets in a local Ubuntu machine
+
+#### 5.1 Runtime Options
+##### 5.1.1 Compositor related runtime option
+To run castanets between different devices, we have options for compositor.  
+Followings are options that needs to be handled for running Castanets in pair.  
+
+<table><tr><td>
+  Ubuntu(Browser)-Ubuntu(Renderer) no additional flags </br>
+Tizen(Browser)-Android(Renderer) no additional flags</br>
+Ubuntu(Browser)-Android(Renderer) (<code>--enable-features="VizDisplayCompositor"</code> in android)</br>  
+Tizen(Browser)-desktop(Renderer) (<code>--disable-features="VizDisplayCompositor"</code> in desktop) </br>
+</td></tr></table>
+
+#### 5.2 Run castanets in a local Ubuntu machine
 Start first chrome instance: Browser Process
 ```sh
-$ out/Default/chrome <URL>
+$ out/Default/chrome <URL> --enable-castanets
 ```
 
 Start second chrome instance: Renderer Process
 ```sh
-$ out/Default/chrome --type=renderer --server-address=127.0.0.1
+$ out/Default/chrome --type=renderer --enable-castanets=127.0.0.1
 ```
 
-#### 5.2 Run castanets in a distributed environment
-##### 5.2.1 Local Ubuntu Browser and Remote Ubuntu Renderer
+#### 5.3 Run castanets in a distributed environment
+##### 5.3.1 Local Ubuntu Browser and Remote Ubuntu Renderer
 _Device A: Browser Process_
 ```sh
-$ out/Default/chrome <URL>
+$ out/Default/chrome <URL> --enable-castanets
 ```
 
 _Device B: Renderer Process_
 ```sh
-$ out/Default/chrome --type=renderer --server-address=<BROWSER IP ADDR>
+$ out/Default/chrome --type=renderer --enable-castanets=<BROWSER IP ADDR>
 ```
 
-##### 5.2.2 Local Ubuntu Browser and Remote Android Renderer
+##### 5.3.2 Local Ubuntu Browser and Remote Android Renderer
 _Device A: Browser Process_
 ```sh
-$ out/Default/chrome <URL>
+$ out/Default/chrome <URL> --enable-castanets
 ```
 _Android Device B: Renderer Process_
 Please setup adb(Android Debug Bridge) first.
@@ -175,6 +188,6 @@ Please setup adb(Android Debug Bridge) first.
 To run Android renderer,
 **adb shell with su permission**
 ```sh
-$(adb) echo "_ --type=renderer --server-address="BROWSER IP ADDR"" > /data/local/tmp/chrome-command-line
+$(adb) echo "_ --type=renderer --enable-castanets="BROWSER IP ADDR"" > /data/local/tmp/chrome-command-line
 ```
 Then touch the Castanets icon from the screen to execute renderer

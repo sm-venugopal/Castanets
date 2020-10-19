@@ -5,6 +5,7 @@
 import("//build/android/resource_sizes.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/features.gni") #Enable service offloading parameter
 import("//build/config/python.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
@@ -77,6 +78,9 @@ jinja_template("chrome_public_android_manifest") {
   variables += [
     "min_sdk_version=19",
     "target_sdk_version=$android_sdk_version",
+    "enable_castanets=$enable_castanets",
+    "enable_service_offloading=$enable_service_offloading",
+    "enable_service_offloading_knox=$enable_service_offloading_knox",
   ]
 }
 
@@ -388,6 +392,10 @@ android_library("chrome_java") {
     "//url/mojom:url_mojom_gurl_java",
   ]
 
+  if (enable_service_offloading && enable_service_offloading_knox){
+    deps += [ "//base:com_samsung_knox_sdk_java", ]
+  }
+
   deps += feed_deps
 
   srcjar_deps = [
@@ -459,6 +467,9 @@ android_library("chrome_java") {
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
   if (notouch_build) {
     deps += [ ":chrome_touchless_java_resources" ]
+  }
+  if (enable_offload) {
+    deps += [ "//third_party/offload-js:offload_java" ]
   }
 
   # Add the actual implementation where necessary so that downstream targets
@@ -1109,6 +1120,10 @@ jinja_template_resources("chrome_public_apk_template_resources") {
   ]
   res_dir = "java/res_template"
   variables = [ "manifest_package=$manifest_package" ]
+
+  if (enable_service_offloading && enable_service_offloading_knox) {
+    resources += [ "java/res_template/xml/device_admin_receiver.xml", ]
+  }
 }
 
 jinja_template_resources("chrome_test_apk_template_resources") {

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//third_party/blink/renderer/bindings/bindings.gni")
 import("//third_party/blink/renderer/config.gni")
 
@@ -528,9 +529,15 @@ if (!is_android) {
                                      "abspath")
 }
 
+if (((is_android && enable_service_offloading_knox) || is_win) &&
+    enable_service_offloading) {
+  modules_idl_files +=
+      get_path_info([ "input_control/input_control.idl" ], "abspath")
+}
+
 if (support_webgl2_compute_context) {
   modules_idl_files +=
-      get_path_info([ "webgl/webgl2_compute_rendering_context.idl" ], "abspath")
+      get_path_info([ "webgl/webgl2_compute_rendering_context.idl", ], "abspath")
 }
 
 modules_callback_function_idl_files =
@@ -968,6 +975,10 @@ if (!is_android) {
                       "serial/worker_navigator_serial.idl",
                     ],
                     "abspath")
+}
+
+if (((is_android && enable_service_offloading_knox) || is_win) && enable_service_offloading) {
+  modules_dependency_idl_files += get_path_info([ "input_control/window_input_call.idl", ],"abspath")
 }
 
 if (support_webgl2_compute_context) {

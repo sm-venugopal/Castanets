@@ -22,6 +22,7 @@
 #include "mojo/public/c/system/platform_handle.h"
 
 #if defined(CASTANETS)
+#include "base/distributed_chromium_util.h"
 #include "base/memory/shared_memory_helper.h"
 #include "base/memory/shared_memory_tracker.h"
 #endif // defined(CASTANETS)
@@ -47,6 +48,10 @@ static_assert(sizeof(SerializedState) % 8 == 0,
               "Invalid SerializedState size.");
 
 }  // namespace
+
+#if defined(CASTANETS)
+const int kGenericSensorBufferSize = 528;
+#endif
 
 // static
 const MojoCreateSharedBufferOptions
@@ -188,19 +193,22 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
       mode, static_cast<size_t>(serialized_state->num_bytes), guid);
 
 #if defined(CASTANETS)
-  if (!region.IsValid()) {
-    base::SharedMemoryCreateOptions options;
-    options.size = static_cast<size_t>(serialized_state->num_bytes);
-    // TODO: Check why read only mode crashes
-#if 0
-    if (mode == base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly) {
-      options.share_read_only = true;
+  if (base::Castanets::IsEnabled()) {
+    if (!region.IsValid()) {
+      base::SharedMemoryCreateOptions options;
+      options.size = static_cast<size_t>(serialized_state->num_bytes);
+      region = base::CreateAnonymousSharedMemoryIfNeeded(guid, options);
+    } else {
+      // FIXME (suyambu.rm): It is not confirmed that deserialized handle within
+      // same node will not be shared with renderer. for e.g GenericSensor. It
+      // seems we cannot detect such cases. As a temporary workaround avoiding
+      // this for shared memory for generic sensor based on its size.
+      if (static_cast<size_t>(serialized_state->num_bytes) !=
+          kGenericSensorBufferSize) {
+        base::SharedMemoryTracker::GetInstance()->MapInternalMemory(
+            region.GetPlatformHandle().fd);
+      }
     }
-#endif
-    region = base::CreateAnonymousSharedMemoryIfNeeded(guid, options);
-  } else {
-    base::SharedMemoryTracker::GetInstance()->MapInternalMemory(
-        region.GetPlatformHandle().fd);
   }
 #endif
 
@@ -326,6 +334,9 @@ MojoResult SharedBufferDispatcher::GetBufferInfo(MojoSharedBufferInfo* info) {
   base::AutoLock lock(lock_);
   info->struct_size = sizeof(*info);
   info->size = region_.GetSize();
+#if defined(CASTANETS)
+  info->guid = region_.GetGUID();
+#endif
   return MOJO_RESULT_OK;
 }
 
@@ -386,8 +397,10 @@ bool SharedBufferDispatcher::EndSerialize(void* destination,
     handles[0] = std::move(platform_handles[0]);
     handles[1] = std::move(platform_handles[1]);
 #if defined(CASTANETS)
-    base::SharedMemoryTracker::GetInstance()->AddFDInTransit(
-        guid, handles[0].GetFD().get());
+    if (base::Castanets::IsEnabled()) {
+      base::SharedMemoryTracker::GetInstance()->AddFDInTransit(
+          guid, handles[0].GetFD().get());
+    }
 #endif
     return true;
   }
@@ -399,8 +412,10 @@ bool SharedBufferDispatcher::EndSerialize(void* destination,
       region.PassPlatformHandle(), &platform_handle, &ignored_handle);
   handles[0] = std::move(platform_handle);
 #if defined(CASTANETS)
-  base::SharedMemoryTracker::GetInstance()->AddFDInTransit(
-      guid, handles[0].GetFD().get());
+  if (base::Castanets::IsEnabled()) {
+    base::SharedMemoryTracker::GetInstance()->AddFDInTransit(
+        guid, handles[0].GetFD().get());
+  }
 #endif
   return true;
 }
